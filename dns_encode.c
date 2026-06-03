@@ -501,6 +501,7 @@ static unsigned int dns_encode_rrs(
                 break;
         }
 
+
         logger("Encoding allowed? %d\n", allowed);
 
         if (allowed)
