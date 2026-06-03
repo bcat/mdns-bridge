@@ -28,6 +28,7 @@
 //
 
 
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -672,10 +673,18 @@ static unsigned int dns_decode_rrs(
                 // Skip link local addresses
                 if (IN6_IS_ADDR_LINKLOCAL((struct in6_addr *) (packet->buffer + packet_offset)))
                 {
+                    inet_ntop(AF_INET6, (struct in6_addr *) (packet->buffer + packet_offset), string, sizeof(string));
+                    logger("Rejected AAAA: %s\n", string);
+                    dns_labels_to_string(rr->name.labels, rr->name.length, string);
+                    logger("(name %s, data len %u)\n", string, data_len);
                     allowed = 0;
                 }
                 else
                 {
+                    inet_ntop(AF_INET6, (struct in6_addr *) (packet->buffer + packet_offset), string, sizeof(string));
+                    logger("Accepted AAAA: %s\n", string);
+                    dns_labels_to_string(rr->name.labels, rr->name.length, string);
+                    logger("(name %s, data len %u)\n", string, data_len);
                     allowed = 1;
                 }
                 break;

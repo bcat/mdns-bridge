@@ -28,6 +28,7 @@
 //
 
 
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -464,7 +465,11 @@ static unsigned int dns_encode_rrs(
     unsigned char *             secondary_data;
     unsigned int                len;
 
+    unsigned char               string[DNS_MAX_NAME_LEN];
+
     *allowed_count = 0;
+
+    logger("Encoding records...\n");
 
     for (index = state->rr_index[section_type]; index < state->rr_index[section_type] + state->rr_count[section_type]; index++)
     {
@@ -496,6 +501,8 @@ static unsigned int dns_encode_rrs(
                 break;
         }
 
+        logger("Encoding allowed? %d\n", allowed);
+
         if (allowed)
         {
             // Encode the name
@@ -512,6 +519,8 @@ static unsigned int dns_encode_rrs(
             rr_header->class = rr->data->class;
             rr_header->ttl = rr->data->ttl;
             packet_offset += sizeof(dns_rr_header_t);
+
+            logger("Encoding record type %d\n", rr->type);
 
             // Set the rdata
             rdata_offset = packet_offset;
@@ -564,6 +573,9 @@ static unsigned int dns_encode_rrs(
                     break;
 
                 // These types do not have a domain name in the rdata section
+                case DNS_TYPE_AAAA:
+                    inet_ntop(AF_INET6, (struct in6_addr *) (rr->data + sizeof(dns_rr_header_t)), string, sizeof(string));
+                    logger("Encoding AAAA: %s\n", string);
                 default:
                     // Get the length and data from the original packet
                     len = ntohs(rr->data->rdata_len);
